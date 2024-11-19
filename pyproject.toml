@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netpackets"
+version = "1.0"
+description = "Network packets constructor"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
