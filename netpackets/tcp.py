@@ -2,6 +2,8 @@ import struct
 from collections.abc import Iterable
 from enum import IntFlag
 
+from netpackets.packet import Packet
+
 
 class TCPFlags(IntFlag):
     FIN = 0x01
@@ -23,7 +25,7 @@ def parse_flags(value: int) -> list[TCPFlags]:
     return flags
 
 
-class TCPPacket:
+class TCPPacket(Packet):
     def __init__(self, *, src_port: int = 0, dest_port: int = 0,
                  seq: int = 0, ack: int = 0, window_size: int = 0,
                  flags: Iterable[TCPFlags] = None, data: bytes = b''):

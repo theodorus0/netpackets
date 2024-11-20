@@ -1,6 +1,8 @@
 import struct
 from enum import IntEnum
 
+from netpackets.packet import Packet
+
 
 class EtherType(IntEnum):
     IPv4 = 0x0800
@@ -37,7 +39,7 @@ class EtherType(IntEnum):
     QINQ = 0x9100
 
 
-class EthernetFrame:
+class EthernetFrame(Packet):
     def __init__(self, destination_mac, source_mac, ether_type, payload):
         self.destination_mac = destination_mac
         self.source_mac = source_mac

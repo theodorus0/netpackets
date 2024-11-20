@@ -3,12 +3,14 @@ import socket
 import struct
 from math import ceil
 
+from netpackets.packet import Packet
+
 
 def bit_not(n):
     return (1 << n.bit_length()) - 1 - n
 
 
-class IPPacket:
+class IPPacket(Packet):
     version: int
     type_of_service: int
     identification: int
