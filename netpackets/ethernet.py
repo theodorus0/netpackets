@@ -1,6 +1,8 @@
 import struct
 from enum import IntEnum
+from typing import Optional
 
+from netpackets import IPPacket
 from netpackets.packet import Packet
 
 
@@ -43,7 +45,7 @@ class EthernetFrame(Packet):
     def __init__(self, destination_mac, source_mac, ether_type, payload):
         self.destination_mac = destination_mac
         self.source_mac = source_mac
-        self.ether_type = ether_type
+        self.ether_type: EtherType = ether_type
         self.payload = payload
 
     def build(self) -> bytes:
@@ -63,3 +65,9 @@ class EthernetFrame(Packet):
         ether_type = struct.unpack('!H', ether_type_bytes)[0]
         payload = frame_bytes[14:]
         return EthernetFrame(destination_mac, source_mac, ether_type, payload)
+
+    @property
+    def sublayer(self) -> IPPacket:
+        if self.ether_type != EtherType.IPv4:
+            raise NotImplementedError(f"Can't decode {self.ether_type.name} protocol")
+        return IPPacket.parse(self.payload)

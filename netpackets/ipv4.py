@@ -2,7 +2,9 @@ import random
 import socket
 import struct
 from math import ceil
+from typing import Optional
 
+from netpackets import TCPPacket
 from netpackets.packet import Packet
 
 
@@ -124,3 +126,9 @@ class IPPacket(Packet):
 
         packet_bytes = header + self.data
         return packet_bytes
+
+    @property
+    def sublayer(self) -> TCPPacket:
+        if self.protocol != 6:
+            raise NotImplementedError(f"Can't decode IPPROTO: {self.protocol}")
+        return TCPPacket.parse(self.data)
