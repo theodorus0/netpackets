@@ -1,4 +1,4 @@
-from netpackets.tcp import TCPPacket, TCPFlags
+from netpackets import TCPPacket, TCPFlags
 
 
 def test_parse():

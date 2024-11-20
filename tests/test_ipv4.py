@@ -1,8 +1,7 @@
 import socket
 import struct
 
-from netpackets.ipv4 import IPPacket
-from netpackets.tcp import TCPPacket, TCPFlags
+from netpackets import IPPacket, TCPPacket, TCPFlags
 
 
 def test_build():
