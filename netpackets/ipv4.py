@@ -29,9 +29,11 @@ class IPPacket(Packet):
     dont_fragment: bool
     more_fragments: bool
 
+    __sublayer: Optional[TCPPacket]
+
     @property
     def header_checksum(self):
-        header = struct.pack('!BBHHHBBH',
+        header = struct.pack('!BBHHHBBH4s4s',
                              (self.version << 4) + (self.header_length // 4),
                              self.type_of_service,
                              self.total_length,
@@ -39,12 +41,16 @@ class IPPacket(Packet):
                              (self.flags << 13) + self.fragment_offset,
                              self.ttl,
                              self.protocol,
-                             0)
+                             0,
+                             socket.inet_aton(self.source_ip),
+                             socket.inet_aton(self.destination_ip))
         chksum = 0
-        for word, in struct.iter_unpack("H", header):
+        for word, in struct.iter_unpack("!H", header):
             chksum += word
-        carry = chksum // 0x10000
-        return bit_not(chksum % 0x10000 + carry)
+        while chksum >> 16:
+            chksum = (chksum & 0xFFFF) + (chksum >> 16)
+
+        return (~chksum) & 0xFFFF
 
     @property
     def flags(self):
@@ -72,6 +78,7 @@ class IPPacket(Packet):
         self.source_ip = source
         self.destination_ip = dest
         self.data = payload
+        self.__sublayer = None
 
     @staticmethod
     def parse(header_bytes: bytes) -> 'IPPacket':
@@ -131,4 +138,6 @@ class IPPacket(Packet):
     def sublayer(self) -> TCPPacket:
         if self.protocol != 6:
             raise NotImplementedError(f"Can't decode IPPROTO: {self.protocol}")
-        return TCPPacket.parse(self.data)
+        if self.__sublayer is None:
+            self.__sublayer = TCPPacket.parse(self.data)
+        return self.__sublayer

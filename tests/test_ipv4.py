@@ -13,9 +13,16 @@ def test_build():
     built_packet = packet.build()
 
     # Unpack the built packet to verify its contents
-    version_and_ihl, tos, total_length, identification, flags_and_fragment_offset, \
-        ttl, protocol, header_checksum, source_ip_bytes, destination_ip_bytes = \
-        struct.unpack_from('!BBHHHBBH4s4s', built_packet[:20])
+    (version_and_ihl,
+     tos,
+     total_length,
+     identification,
+     flags_and_fragment_offset,
+     ttl,
+     protocol,
+     header_checksum,
+     source_ip_bytes,
+     destination_ip_bytes) = struct.unpack_from('!BBHHHBBH4s4s', built_packet[:20])
 
     assert version_and_ihl >> 4 == 4  # IPv4
     assert tos == 0
@@ -47,9 +54,16 @@ def test_ip_packet_with_tcp_payload():
     ip_packet = IPPacket(source=source_ip, dest=destination_ip, payload=(tcp_packet.build()))
     built_packet = ip_packet.build()
 
-    version_and_ihl, tos, total_length, identification, flags_and_fragment_offset, \
-        ttl, protocol, header_checksum, source_ip_bytes, destination_ip_bytes = \
-        struct.unpack_from('!BBHHHBBH4s4s', built_packet[:20])
+    (version_and_ihl,
+     tos,
+     total_length,
+     identification,
+     flags_and_fragment_offset,
+     ttl,
+     protocol,
+     header_checksum,
+     source_ip_bytes,
+     destination_ip_bytes) = struct.unpack_from('!BBHHHBBH4s4s', built_packet[:20])
 
     assert version_and_ihl >> 4 == 4
     assert tos == 0
@@ -74,3 +88,22 @@ def test_ip_packet_with_tcp_payload():
     assert unpacked_tcp_packet.options == b""
     assert unpacked_tcp_packet.data_offset == 5
     assert unpacked_tcp_packet.data == tcp_payload
+
+
+def test_example():
+    packet = IPPacket.parse(bytes.fromhex("45000028787340008006e0f6c0a801a22275bca6f0cd01bb43a7a107d3b57db6501101fde3cc0000"))
+    assert packet.version == 4
+    assert packet.header_length == 20
+    assert packet.type_of_service == 0
+    assert packet.total_length == 40
+    assert packet.identification == 0x7873
+    assert packet.flags == 2
+    assert packet.dont_fragment
+    assert not packet.more_fragments
+    assert packet.ttl == 128
+    assert packet.protocol == 6
+    assert packet.header_checksum == 0xe0f6
+    assert packet.source_ip == "192.168.1.162"
+    assert packet.destination_ip == "34.117.188.166"
+
+

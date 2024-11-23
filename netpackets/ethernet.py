@@ -42,11 +42,14 @@ class EtherType(IntEnum):
 
 
 class EthernetFrame(Packet):
+    __sublayer: Optional[IPPacket]
+
     def __init__(self, destination_mac, source_mac, ether_type, payload):
         self.destination_mac = destination_mac
         self.source_mac = source_mac
         self.ether_type: EtherType = ether_type
         self.payload = payload
+        self.__sublayer = None
 
     def build(self) -> bytes:
         dest_mac_bytes = bytes.fromhex(self.destination_mac.replace(':', ''))
@@ -70,4 +73,6 @@ class EthernetFrame(Packet):
     def sublayer(self) -> IPPacket:
         if self.ether_type != EtherType.IPv4:
             raise NotImplementedError(f"Can't decode {self.ether_type.name} protocol")
-        return IPPacket.parse(self.payload)
+        if self.__sublayer is None:
+            self.__sublayer = IPPacket.parse(self.payload)
+        return self.__sublayer
