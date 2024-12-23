@@ -8,21 +8,17 @@ TLS stream consists of 2 stages:
 Both these stages use their own packet format.
 Also, there is a TLS Alert Protocol to indicate errors that happen during TLS exchange   
 
-## TLS record
-A generic TLS record has following structure:
-
-| Field                             | Size, bytes | Comment                                                     |
-|-----------------------------------|-------------|-------------------------------------------------------------|
-| Content type                      | 1           |                                                             |
-| Major version                     | 1           | until v1.3 used to identify protocol version                |
-| Minor version                     | 1           | until v1.3 used to identify protocol version                |
-| Length                            | 2           | Length of "Data", "MAC" and "Padding" combined              |
-| Data                              | variable    | Packet's payload, actual format is defined by content type  |
-| Message authentication code (MAC) | variable    |                                                             |
-| Padding                           | variable    |                                                             |
-
-
-The standard defines several record types:
+In summary, the standard defines several record types:
 - [Handshake](handshake.md)
 - Alert
+- ChangeCipherSpec
 - Application protocol
+
+## Idea of TLS protocol
+Main idea is that there is no single "TLS packet" that has flags or fields.
+TLS is a _standard_ that defines several protocols, such as **TLS Handshake protocol** and **ChangeCipherSpec protocol**.
+
+Each of these protocols define a record packet that carries one or multiple messages.
+Each message represents information transferred between two sides.
+
+For example, in Handshake protocol client sends a ClientHello message. 

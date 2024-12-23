@@ -7,3 +7,5 @@
 [TCP](tcp.md)
 
 [TLS](tls/tls.md)
+- [Handshake protocol](tls/handshake.md)
+- [Extensions](tls/extensions.md)

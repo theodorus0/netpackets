@@ -1,4 +1,4 @@
-# TLS handshake record
+# TLS Handshake protocol
 
 ## TLS 1.3 Handshake process
 Main phases are:
@@ -11,7 +11,7 @@ Main phases are:
 Handshake protocol allows to exchange data during TLS handshake,
 so client and server can choose encryption methods, protocols and so on.
 
-Handshake protocol defines structure of its TLS record:
+TLS Handshake protocol defines the following structure:
 
 | Field              | Size, bytes | Comment                                      |
 |--------------------|-------------|----------------------------------------------|
