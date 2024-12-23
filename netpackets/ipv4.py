@@ -1,7 +1,7 @@
 import random
 import socket
 import struct
-from math import ceil
+
 from typing import Optional
 
 from netpackets import TCPPacket
@@ -13,26 +13,27 @@ def bit_not(n):
 
 
 class IPPacket(Packet):
-    version: int
-    type_of_service: int
-    identification: int
-    flags: int
-    fragment_offset: int
-    ttl: int
-    protocol: int
-    header_checksum: int
-    source_ip: str
-    destination_ip: str
-    options: bytes
-    data: bytes
+    version: int = 4
+    __type_of_service: int
+    __identification: int
+    __fragment_offset: int
+    __ttl: int
+    __protocol: int
+    __header_checksum: Optional[int]
+    __source_ip: str
+    __destination_ip: str
+    __options: bytes
+    __data: bytes
 
-    dont_fragment: bool
-    more_fragments: bool
+    __dont_fragment: bool
+    __more_fragments: bool
 
     __sublayer: Optional[TCPPacket]
 
     @property
     def header_checksum(self):
+        if self.__header_checksum is not None:
+            return self.__header_checksum
         header = struct.pack('!BBHHHBBH4s4s',
                              (self.version << 4) + (self.header_length // 4),
                              self.type_of_service,
@@ -49,8 +50,12 @@ class IPPacket(Packet):
             chksum += word
         while chksum >> 16:
             chksum = (chksum & 0xFFFF) + (chksum >> 16)
+        self.__header_checksum = (~chksum) & 0xFFFF
+        return self.__header_checksum
 
-        return (~chksum) & 0xFFFF
+    @header_checksum.setter
+    def header_checksum(self, checksum: int):
+        self.__header_checksum = checksum
 
     @property
     def flags(self):
@@ -58,15 +63,13 @@ class IPPacket(Packet):
 
     @property
     def header_length(self):
-        actual_length = 20 + len(self.options)
-        return ceil(actual_length / 4) * 4
+        return 20 + len(self.options)
 
     @property
     def total_length(self):
         return self.header_length + len(self.data)
 
     def __init__(self, *, source: str = "0.0.0.0", dest: str = "255.255.255.255", payload: bytes = b""):
-        self.version = 4
         self.ttl = 128
         self.options = b''
         self.dont_fragment = True
@@ -136,8 +139,107 @@ class IPPacket(Packet):
 
     @property
     def sublayer(self) -> TCPPacket:
-        if self.protocol != 6:
-            raise NotImplementedError(f"Can't decode IPPROTO: {self.protocol}")
         if self.__sublayer is None:
             self.__sublayer = TCPPacket.parse(self.data)
         return self.__sublayer
+
+    @property
+    def data(self):
+        return self.__data
+
+    @data.setter
+    def data(self, data: bytes):
+        self.__data = data
+        self.__sublayer = None
+
+    @property
+    def ttl(self):
+        return self.__ttl
+
+    @ttl.setter
+    def ttl(self, ttl: int):
+        self.__ttl = ttl
+        self.__header_checksum = None
+
+    @property
+    def protocol(self):
+        return self.__protocol
+
+    @protocol.setter
+    def protocol(self, protocol: int):
+        if protocol != 6:
+            raise NotImplementedError(f"Can't decode IPPROTO: {protocol}")
+        self.__protocol = protocol
+        self.__header_checksum = None
+
+    @property
+    def source_ip(self):
+        return self.__source_ip
+
+    @source_ip.setter
+    def source_ip(self, source_ip: str):
+        self.__source_ip = source_ip
+        self.__header_checksum = None
+
+    @property
+    def destination_ip(self):
+        return self.__destination_ip
+
+    @destination_ip.setter
+    def destination_ip(self, destination_ip: str):
+        self.__destination_ip = destination_ip
+        self.__header_checksum = None
+
+    @property
+    def options(self):
+        return self.__options
+
+    @options.setter
+    def options(self, options: bytes):
+        self.__options = options
+        self.__header_checksum = None
+
+    @property
+    def dont_fragment(self):
+        return self.__dont_fragment
+
+    @dont_fragment.setter
+    def dont_fragment(self, dont_fragment: bool):
+        self.__dont_fragment = dont_fragment
+        self.__header_checksum = None
+
+    @property
+    def more_fragments(self):
+        return self.__more_fragments
+
+    @more_fragments.setter
+    def more_fragments(self, more_fragments: bool):
+        self.__more_fragments = more_fragments
+        self.__header_checksum = None
+
+    @property
+    def fragment_offset(self):
+        return self.__fragment_offset
+
+    @fragment_offset.setter
+    def fragment_offset(self, fragment_offset: int):
+        self.__fragment_offset = fragment_offset
+        self.__header_checksum = None
+
+    @property
+    def type_of_service(self):
+        return self.__type_of_service
+
+    @type_of_service.setter
+    def type_of_service(self, type_of_service: int):
+        self.__type_of_service = type_of_service
+        self.__header_checksum = None
+
+    @property
+    def identification(self):
+        return self.__identification
+
+    @identification.setter
+    def identification(self, identification: int):
+        self.__identification = identification
+        self.__header_checksum = None
